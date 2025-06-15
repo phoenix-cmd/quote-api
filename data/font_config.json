@@ -1,0 +1,16 @@
+{
+    "default": {
+        "regular": "static/Product Sans Regular.ttf",
+        "bold": "static/Product Sans Bold.ttf",
+        "italic": "static/Product Sans Italic.ttf",
+        "bold_italic": "static/Product Sans Bold Italic.ttf"
+    },
+    "fallbacks": [
+        {
+            "regular": "static/Roboto-Regular.ttf",
+            "bold": "static/Roboto-Bold.ttf",
+            "italic": "static/Roboto-Italic.ttf",
+            "bold_italic": "static/Roboto-BoldItalic.ttf"
+        }
+    ]
+}
