@@ -1308,9 +1308,8 @@ async generate(backgroundColorOne, backgroundColorTwo, message, width = 512, hei
     ctx.scale(scaleRatio, scaleRatio)
     ctx.drawImage(quote, 0, 0)
     return resizedCanvas
-  }
-
   return quote
+  }
 }
 
 module.exports = QuoteGenerate
