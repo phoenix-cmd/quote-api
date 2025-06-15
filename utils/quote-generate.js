@@ -608,11 +608,8 @@ class QuoteGenerate {
   ctx.closePath()
   ctx.fill()
   ctx.restore()
-}
-
-}
-
-
+  
+    
     return canvas
   }
 
