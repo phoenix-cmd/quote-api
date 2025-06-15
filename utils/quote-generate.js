@@ -9,8 +9,16 @@ const smartcrop = require('smartcrop-sharp')
 const runes = require('runes')
 const zlib = require('zlib')
 const { Telegram } = require('telegraf')
+const path = require('path')
 
 const emojiDb = new EmojiDbLib({ useDefaultDb: true })
+registerFont('./fonts/Product Sans Regular.ttf', { family: 'Product Sans Regular' })
+registerFont('./fonts/Product Sans Bold.ttf', { family: 'Product Sans Bold' })
+registerFont('./fonts/Roboto-Regular.ttf', { family: 'Roboto' })
+function resolveFont(preferred) {
+  const file = `./fonts/${preferred}.ttf`
+  return fs.existsSync(file) ? preferred : 'Roboto'
+}
 
 function loadFont () {
   console.log('font load start')
@@ -584,10 +592,20 @@ class QuoteGenerate {
     const x = 0
     const y = 0
 
-    const canvas = createCanvas(w, h)
-    const canvasCtx = canvas.getContext('2d')
+    // const canvas = createCanvas(w, h)
+    // const canvasCtx = canvas.getContext('2d')
 
-    canvasCtx.fillStyle = color
+    // canvasCtx.fillStyle = color
+    canvasCtx.save()
+    canvasCtx.shadowOffsetX = 4
+    canvasCtx.shadowOffsetY = 4
+    canvasCtx.shadowBlur = 10
+    canvasCtx.shadowColor = 'rgba(0, 0, 0, 0.35)'
+    canvasCtx.fillStyle = fill
+    drawRoundRect(canvasCtx, x, y, w, h, radius)
+    canvasCtx.fill()
+    canvasCtx.restore()
+
 
     if (w < 2 * r) r = w / 2
     if (h < 2 * r) r = h / 2
@@ -705,12 +723,13 @@ class QuoteGenerate {
       const avatarX = 0
       const avatarY = 0
 
+      canvasCtx.save()
       canvasCtx.beginPath()
       canvasCtx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2, true)
       canvasCtx.clip()
-      canvasCtx.closePath()
-      canvasCtx.restore()
       canvasCtx.drawImage(avatarImage, avatarX, avatarY, avatarSize, avatarSize)
+      canvasCtx.restore()
+
 
       return canvas
     }
@@ -921,227 +940,377 @@ class QuoteGenerate {
     return 'ltr'
   }
 
-  async generate (backgroundColorOne, backgroundColorTwo, message, width = 512, height = 512, scale = 2, emojiBrand = 'apple') {
-    if (!scale) scale = 2
-    if (scale > 20) scale = 20
-    width = width || 512  // Ensure width has a default value
-    height = height || 512 // Ensure height has a default value
-    width *= scale
-    height *= scale
+//   async generate (backgroundColorOne, backgroundColorTwo, message, width = 512, height = 512, scale = 2, emojiBrand = 'apple') {
+//     if (!scale) scale = 2
+//     if (scale > 20) scale = 20
+//     width = width || 512  // Ensure width has a default value
+//     height = height || 512 // Ensure height has a default value
+//     width *= scale
+//     height *= scale
 
-    // check background style color black/light
-    const backStyle = this.lightOrDark(backgroundColorOne)
+//     // check background style color black/light
+//     const backStyle = this.lightOrDark(backgroundColorOne)
 
 
-    // historyPeer1NameFg: #c03d33; // red
-    // historyPeer2NameFg: #4fad2d; // green
-    // historyPeer3NameFg: #d09306; // yellow
-    // historyPeer4NameFg: #168acd; // blue
-    // historyPeer5NameFg: #8544d6; // purple
-    // historyPeer6NameFg: #cd4073; // pink
-    // historyPeer7NameFg: #2996ad; // sea
-    // historyPeer8NameFg: #ce671b; // orange
 
-    // { 0, 7, 4, 1, 6, 3, 5 }
-    // const nameColor = [
-    //   '#c03d33', // red
-    //   '#ce671b', // orange
-    //   '#8544d6', // purple
-    //   '#4fad2d', // green
-    //   '#2996ad', // sea
-    //   '#168acd', // blue
-    //   '#cd4073' // pink
-    // ]
 
-    const nameColorLight = [
-      '#FC5C51', // red
-      '#FA790F', // orange
-      '#895DD5', // purple
-      '#0FB297', // green
-      '#0FC9D6', // sea
-      '#3CA5EC', // blue
-      '#D54FAF' // pink
-    ]
+//     const nameColorLight = [
+//       '#FC5C51', // red
+//       '#FA790F', // orange
+//       '#895DD5', // purple
+//       '#0FB297', // green
+//       '#0FC9D6', // sea
+//       '#3CA5EC', // blue
+//       '#D54FAF' // pink
+//     ]
 
-    const nameColorDark = [
-      '#FF8E86', // red
-      '#FFA357', // orange
-      '#B18FFF', // purple
-      '#4DD6BF', // green
-      '#45E8D1', // sea
-      '#7AC9FF', // blue
-      '#FF7FD5' // pink
-    ]
+//     const nameColorDark = [
+//       '#FF8E86', // red
+//       '#FFA357', // orange
+//       '#B18FFF', // purple
+//       '#4DD6BF', // green
+//       '#45E8D1', // sea
+//       '#7AC9FF', // blue
+//       '#FF7FD5' // pink
+//     ]
 
-    // user name  color
-    let nameIndex = 1
-    if (message.from && message.from.id) nameIndex = Math.abs(message.from.id) % 7
+//     // user name  color
+//     let nameIndex = 1
+//     if (message.from && message.from.id) nameIndex = Math.abs(message.from.id) % 7
 
-    const nameColorArray = backStyle === 'light' ? nameColorLight : nameColorDark
+//     const nameColorArray = backStyle === 'light' ? nameColorLight : nameColorDark
 
-    let nameColor = nameColorArray[nameIndex]
+//     let nameColor = nameColorArray[nameIndex]
 
-    const colorContrast = new ColorContrast()
+//     const colorContrast = new ColorContrast()
 
-    // change name color based on background color by contrast
-    const contrast = colorContrast.getContrastRatio(this.colorLuminance(backgroundColorOne, 0.55), nameColor)
-    if (contrast > 90 || contrast < 30) {
-      nameColor = colorContrast.adjustContrast(this.colorLuminance(backgroundColorTwo, 0.55), nameColor)
+//     // change name color based on background color by contrast
+//     const contrast = colorContrast.getContrastRatio(this.colorLuminance(backgroundColorOne, 0.55), nameColor)
+//     if (contrast > 90 || contrast < 30) {
+//       nameColor = colorContrast.adjustContrast(this.colorLuminance(backgroundColorTwo, 0.55), nameColor)
+//     }
+
+//     const nameSize = 22 * scale
+
+//     let nameCanvas
+//     if (message?.from?.name || (message?.from?.first_name || message?.from?.last_name)) {
+//       let name = message.from.name || `${message.from.first_name || ''} ${message.from.last_name || ''}`.trim()
+
+//       if (!name) name = "User" // Default name if none provided
+
+//       const nameEntities = [
+//         {
+//           type: 'bold',
+//           offset: 0,
+//           length: name.length
+//         }
+//       ]
+
+//       if (message.from.emoji_status) {
+//         name += ' 🤡'
+
+//         nameEntities.push({
+//           type: 'custom_emoji',
+//           offset: name.length - 2,
+//           length: 2,
+//           custom_emoji_id: message.from.emoji_status
+//         })
+//       }
+
+//       nameCanvas = await this.drawMultilineText(
+//         name,
+//         nameEntities,
+//         nameSize,
+//         nameColor,
+//         0,
+//         nameSize,
+//         width,
+//         nameSize,
+//         emojiBrand
+//       )
+//     }
+
+//     let fontSize = 24 * scale
+
+//     let textColor = '#fff'
+//     if (backStyle === 'light') textColor = '#000'
+
+//     let textCanvas
+//     if (message.text) {
+//       textCanvas = await this.drawMultilineText(
+//         message.text,
+//         message.entities,
+//         fontSize,
+//         textColor,
+//         0,
+//         fontSize,
+//         width,
+//         height - fontSize,
+//         emojiBrand
+//       )
+//     }
+
+//     let avatarCanvas
+//     if (message.avatar && message.from) avatarCanvas = await this.drawAvatar(message.from)
+
+//     let replyName, replyNameColor, replyText
+//     if (message.replyMessage && message.replyMessage.name && message.replyMessage.text) {
+//       try {
+//         // Ensure chatId exists to prevent NaN in calculations
+//         const chatId = message.replyMessage.chatId || 0
+//         const replyNameIndex = Math.abs(chatId) % 7
+//         replyNameColor = nameColorArray[replyNameIndex]
+
+//         const replyNameFontSize = 16 * scale
+//         replyName = await this.drawMultilineText(
+//           message.replyMessage.name,
+//           'bold',
+//           replyNameFontSize,
+//           replyNameColor,
+//           0,
+//           replyNameFontSize,
+//           width * 0.9,
+//           replyNameFontSize,
+//           emojiBrand
+//         )
+
+//         let textColor = '#fff'
+//         if (backStyle === 'light') textColor = '#000'
+
+//         const replyTextFontSize = 21 * scale
+//         replyText = await this.drawMultilineText(
+//           message.replyMessage.text,
+//           message.replyMessage.entities || [],
+//           replyTextFontSize,
+//           textColor,
+//           0,
+//           replyTextFontSize,
+//           width * 0.9,
+//           replyTextFontSize,
+//           emojiBrand
+//         )
+//       } catch (error) {
+//         console.error("Error generating reply message:", error)
+//         // If reply message generation fails, continue without it
+//         replyName = null
+//         replyText = null
+//       }
+//     }
+
+//     let mediaCanvas, mediaType, maxMediaSize
+//     if (message.media) {
+//       let media, type
+
+//       let crop = false
+//       if (message.mediaCrop) crop = true
+
+//       if (message.media.url) {
+//         type = 'url'
+//         media = message.media.url
+//       } else {
+//         type = 'id'
+//         if (message.media.length > 1) {
+//           if (crop) media = message.media[1]
+//           else media = message.media.pop()
+//         } else media = message.media[0]
+//       }
+
+//       maxMediaSize = width / 3 * scale
+//       if (message.text && maxMediaSize < textCanvas.width) maxMediaSize = textCanvas.width
+
+//       if (media.is_animated) {
+//         media = media.thumb
+//         maxMediaSize = maxMediaSize / 2
+//       }
+
+//       mediaCanvas = await this.downloadMediaImage(media, maxMediaSize, type, crop)
+//       mediaType = message.mediaType
+//     }
+
+//     if (message.voice) {
+//       mediaCanvas = this.drawWaveform(message.voice.waveform)
+//       maxMediaSize = width / 3 * scale
+//     }
+
+//     const quote = this.drawQuote(
+//       scale,
+//       backgroundColorOne, backgroundColorTwo,
+//       avatarCanvas,
+//       replyName, replyNameColor, replyText,
+//       nameCanvas, textCanvas,
+//       mediaCanvas, mediaType, maxMediaSize
+//     )
+
+//     return quote
+//   }
+// }
+async generate(backgroundColorOne, backgroundColorTwo, message, width = 512, height = 512, scale = 2, emojiBrand = 'apple') {
+  if (!scale) scale = 2
+  if (scale > 20) scale = 20
+  width *= scale
+  height *= scale
+
+  const backStyle = this.lightOrDark(backgroundColorOne)
+
+  const nameColorLight = ['#FC5C51', '#FA790F', '#895DD5', '#0FB297', '#0FC9D6', '#3CA5EC', '#D54FAF']
+  const nameColorDark = ['#FF8E86', '#FFA357', '#B18FFF', '#4DD6BF', '#45E8D1', '#7AC9FF', '#FF7FD5']
+
+  let nameIndex = message.from?.id ? Math.abs(message.from.id) % 7 : 1
+  const nameColorArray = backStyle === 'light' ? nameColorLight : nameColorDark
+  let nameColor = nameColorArray[nameIndex]
+
+  const colorContrast = new ColorContrast()
+  const contrast = colorContrast.getContrastRatio(this.colorLuminance(backgroundColorOne, 0.55), nameColor)
+  if (contrast > 90 || contrast < 30) {
+    nameColor = colorContrast.adjustContrast(this.colorLuminance(backgroundColorTwo, 0.55), nameColor)
+  }
+
+  const nameSize = 22 * scale
+  let nameCanvas
+
+  if (message?.from?.name || message?.from?.first_name || message?.from?.last_name) {
+    let name = message.from.name || `${message.from.first_name || ''} ${message.from.last_name || ''}`.trim()
+    if (!name) name = "User"
+
+    const nameEntities = [{ type: 'bold', offset: 0, length: name.length }]
+    if (message.from.emoji_status) {
+      name += ' 🤡'
+      nameEntities.push({
+        type: 'custom_emoji',
+        offset: name.length - 2,
+        length: 2,
+        custom_emoji_id: message.from.emoji_status
+      })
     }
 
-    const nameSize = 22 * scale
+    nameCanvas = await this.drawMultilineText(
+      name,
+      nameEntities,
+      nameSize,
+      nameColor,
+      0,
+      nameSize,
+      width,
+      nameSize,
+      emojiBrand
+    )
+  }
 
-    let nameCanvas
-    if (message?.from?.name || (message?.from?.first_name || message?.from?.last_name)) {
-      let name = message.from.name || `${message.from.first_name || ''} ${message.from.last_name || ''}`.trim()
+  let fontSize = 24 * scale
+  let textColor = backStyle === 'light' ? '#000' : '#fff'
+  let textCanvas
 
-      if (!name) name = "User" // Default name if none provided
+  if (message.text) {
+    textCanvas = await this.drawMultilineText(
+      message.text,
+      message.entities,
+      fontSize,
+      textColor,
+      0,
+      fontSize,
+      width,
+      height - fontSize,
+      emojiBrand
+    )
+  }
 
-      const nameEntities = [
-        {
-          type: 'bold',
-          offset: 0,
-          length: name.length
-        }
-      ]
+  let avatarCanvas
+  if (message.avatar && message.from) {
+    avatarCanvas = await this.drawAvatar(message.from)
+  }
 
-      if (message.from.emoji_status) {
-        name += ' 🤡'
+  let replyName, replyNameColor, replyText
+  if (message.replyMessage?.name && message.replyMessage?.text) {
+    try {
+      const chatId = message.replyMessage.chatId || 0
+      const replyNameIndex = Math.abs(chatId) % 7
+      replyNameColor = nameColorArray[replyNameIndex]
 
-        nameEntities.push({
-          type: 'custom_emoji',
-          offset: name.length - 2,
-          length: 2,
-          custom_emoji_id: message.from.emoji_status
-        })
-      }
-
-      nameCanvas = await this.drawMultilineText(
-        name,
-        nameEntities,
-        nameSize,
-        nameColor,
+      const replyNameFontSize = 16 * scale
+      replyName = await this.drawMultilineText(
+        message.replyMessage.name,
+        'bold',
+        replyNameFontSize,
+        replyNameColor,
         0,
-        nameSize,
-        width,
-        nameSize,
+        replyNameFontSize,
+        width * 0.9,
+        replyNameFontSize,
         emojiBrand
       )
-    }
 
-    let fontSize = 24 * scale
-
-    let textColor = '#fff'
-    if (backStyle === 'light') textColor = '#000'
-
-    let textCanvas
-    if (message.text) {
-      textCanvas = await this.drawMultilineText(
-        message.text,
-        message.entities,
-        fontSize,
+      const replyTextFontSize = 21 * scale
+      replyText = await this.drawMultilineText(
+        message.replyMessage.text,
+        message.replyMessage.entities || [],
+        replyTextFontSize,
         textColor,
         0,
-        fontSize,
-        width,
-        height - fontSize,
+        replyTextFontSize,
+        width * 0.9,
+        replyTextFontSize,
         emojiBrand
       )
+    } catch (e) {
+      console.error("Error generating reply block:", e)
+      replyName = null
+      replyText = null
     }
-
-    let avatarCanvas
-    if (message.avatar && message.from) avatarCanvas = await this.drawAvatar(message.from)
-
-    let replyName, replyNameColor, replyText
-    if (message.replyMessage && message.replyMessage.name && message.replyMessage.text) {
-      try {
-        // Ensure chatId exists to prevent NaN in calculations
-        const chatId = message.replyMessage.chatId || 0
-        const replyNameIndex = Math.abs(chatId) % 7
-        replyNameColor = nameColorArray[replyNameIndex]
-
-        const replyNameFontSize = 16 * scale
-        replyName = await this.drawMultilineText(
-          message.replyMessage.name,
-          'bold',
-          replyNameFontSize,
-          replyNameColor,
-          0,
-          replyNameFontSize,
-          width * 0.9,
-          replyNameFontSize,
-          emojiBrand
-        )
-
-        let textColor = '#fff'
-        if (backStyle === 'light') textColor = '#000'
-
-        const replyTextFontSize = 21 * scale
-        replyText = await this.drawMultilineText(
-          message.replyMessage.text,
-          message.replyMessage.entities || [],
-          replyTextFontSize,
-          textColor,
-          0,
-          replyTextFontSize,
-          width * 0.9,
-          replyTextFontSize,
-          emojiBrand
-        )
-      } catch (error) {
-        console.error("Error generating reply message:", error)
-        // If reply message generation fails, continue without it
-        replyName = null
-        replyText = null
-      }
-    }
-
-    let mediaCanvas, mediaType, maxMediaSize
-    if (message.media) {
-      let media, type
-
-      let crop = false
-      if (message.mediaCrop) crop = true
-
-      if (message.media.url) {
-        type = 'url'
-        media = message.media.url
-      } else {
-        type = 'id'
-        if (message.media.length > 1) {
-          if (crop) media = message.media[1]
-          else media = message.media.pop()
-        } else media = message.media[0]
-      }
-
-      maxMediaSize = width / 3 * scale
-      if (message.text && maxMediaSize < textCanvas.width) maxMediaSize = textCanvas.width
-
-      if (media.is_animated) {
-        media = media.thumb
-        maxMediaSize = maxMediaSize / 2
-      }
-
-      mediaCanvas = await this.downloadMediaImage(media, maxMediaSize, type, crop)
-      mediaType = message.mediaType
-    }
-
-    if (message.voice) {
-      mediaCanvas = this.drawWaveform(message.voice.waveform)
-      maxMediaSize = width / 3 * scale
-    }
-
-    const quote = this.drawQuote(
-      scale,
-      backgroundColorOne, backgroundColorTwo,
-      avatarCanvas,
-      replyName, replyNameColor, replyText,
-      nameCanvas, textCanvas,
-      mediaCanvas, mediaType, maxMediaSize
-    )
-
-    return quote
   }
+
+  let mediaCanvas, mediaType, maxMediaSize
+  if (message.media) {
+    let media, type
+    const crop = !!message.mediaCrop
+
+    if (message.media.url) {
+      type = 'url'
+      media = message.media.url
+    } else {
+      type = 'id'
+      media = message.media.length > 1 ? (crop ? message.media[1] : message.media.pop()) : message.media[0]
+    }
+
+    maxMediaSize = width / 3 * scale
+    if (message.text && maxMediaSize < textCanvas?.width) {
+      maxMediaSize = textCanvas.width
+    }
+
+    if (media.is_animated) {
+      media = media.thumb
+      maxMediaSize /= 2
+    }
+
+    mediaCanvas = await this.downloadMediaImage(media, maxMediaSize, type, crop)
+    mediaType = message.mediaType
+  }
+
+  if (message.voice) {
+    mediaCanvas = this.drawWaveform(message.voice.waveform)
+    maxMediaSize = width / 3 * scale
+  }
+
+  let quote = this.drawQuote(
+    scale,
+    backgroundColorOne, backgroundColorTwo,
+    avatarCanvas,
+    replyName, replyNameColor, replyText,
+    nameCanvas, textCanvas,
+    mediaCanvas, mediaType, maxMediaSize
+  )
+
+  // Clamp tall output to avoid Telegram-style clipping
+  const maxHeight = 2048
+  if (quote.height > maxHeight) {
+    const scaleRatio = maxHeight / quote.height
+    const resizedCanvas = createCanvas(quote.width * scaleRatio, maxHeight)
+    const ctx = resizedCanvas.getContext('2d')
+    ctx.scale(scaleRatio, scaleRatio)
+    ctx.drawImage(quote, 0, 0)
+    return resizedCanvas
+  }
+
+  return quote
 }
 
 module.exports = QuoteGenerate
