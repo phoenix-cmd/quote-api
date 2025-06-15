@@ -588,9 +588,7 @@ class QuoteGenerate {
   }
 
   // https://stackoverflow.com/a/3368118
-  drawRoundRect(ctx, x, y, w, h, r, fillStyle = '#1E1E1E') {
-    const canvas = createCanvas(w, h)
-    const ctx = canvas.getContext('2d') 
+  drawRoundRect(ctx, x, y, w, h, r = 12, fillStyle = '#1E1E1E') {
   if (w < 2 * r) r = w / 2
   if (h < 2 * r) r = h / 2
 
@@ -609,8 +607,9 @@ class QuoteGenerate {
   ctx.arcTo(x, y, x + w, y, r)
   ctx.closePath()
   ctx.fill()
-
   ctx.restore()
+}
+
 }
 
 
