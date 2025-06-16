@@ -589,6 +589,8 @@ class QuoteGenerate {
 
   // https://stackoverflow.com/a/3368118
   drawRoundRect(canvasCtx, x, y, w, h, r = 12, fillStyle = '#1E1E1E') {
+    const canvas = createCanvas(w, h)
+    const canvasCtx = canvas.getContext('2d')
   canvasCtx.save()
   canvasCtx.shadowOffsetX = 4
   canvasCtx.shadowOffsetY = 4
