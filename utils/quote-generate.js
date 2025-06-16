@@ -613,8 +613,6 @@ class QuoteGenerate {
   drawGradientRoundRect (colorOne, colorTwo, w, h, r) {
     const x = 0
     const y = 0
-
-    const canvas = createCanvas(w, h)
     const canvasCtx = canvas.getContext('2d')
 
     const gradient = canvasCtx.createLinearGradient(0, 0, w, h)
