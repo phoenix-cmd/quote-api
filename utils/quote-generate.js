@@ -588,29 +588,24 @@ class QuoteGenerate {
   }
 
   // https://stackoverflow.com/a/3368118
-  drawRoundRect(ctx, x, y, w, h, r = 12, fillStyle = '#1E1E1E') {
-  if (w < 2 * r) r = w / 2
-  if (h < 2 * r) r = h / 2
+  drawRoundRect(canvasCtx, x, y, w, h, r = 12, fillStyle = '#1E1E1E') {
+  canvasCtx.save()
+  canvasCtx.shadowOffsetX = 4
+  canvasCtx.shadowOffsetY = 4
+  canvasCtx.shadowBlur = 10
+  canvasCtx.shadowColor = 'rgba(0, 0, 0, 0.35)'
+  canvasCtx.fillStyle = fillStyle
 
-  ctx.save()
-  ctx.shadowOffsetX = 4
-  ctx.shadowOffsetY = 4
-  ctx.shadowBlur = 10
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.35)'
-  ctx.fillStyle = fillStyle
-
-  ctx.beginPath()
-  ctx.moveTo(x + r, y)
-  ctx.arcTo(x + w, y, x + w, y + h, r)
-  ctx.arcTo(x + w, y + h, x, y + h, r)
-  ctx.arcTo(x, y + h, x, y, r)
-  ctx.arcTo(x, y, x + w, y, r)
-  ctx.closePath()
-  ctx.fill()
-  ctx.restore()
-  
-    
-    return canvas
+  canvasCtx.beginPath()
+  canvasCtx.moveTo(x + r, y)
+  canvasCtx.arcTo(x + w, y, x + w, y + h, r)
+  canvasCtx.arcTo(x + w, y + h, x, y + h, r)
+  canvasCtx.arcTo(x, y + h, x, y, r)
+  canvasCtx.arcTo(x, y, x + w, y, r)
+  canvasCtx.closePath()
+  canvasCtx.fill()
+  canvasCtx.restore() 
+  return canvas
   }
 
   drawGradientRoundRect (colorOne, colorTwo, w, h, r) {
