@@ -590,29 +590,29 @@ class QuoteGenerate {
   // https://stackoverflow.com/a/3368118
   drawRoundRect(canvasCtx, x, y, w, h, r = 12, fillStyle = '#1E1E1E') {
     const canvas = createCanvas(w, h)
-    const canvasCtx = canvas.getContext('2d')
-  canvasCtx.save()
-  canvasCtx.shadowOffsetX = 4
-  canvasCtx.shadowOffsetY = 4
-  canvasCtx.shadowBlur = 10
-  canvasCtx.shadowColor = 'rgba(0, 0, 0, 0.35)'
-  canvasCtx.fillStyle = fillStyle
+    canvasCtx.save()
+    canvasCtx.shadowOffsetX = 4
+    canvasCtx.shadowOffsetY = 4
+    canvasCtx.shadowBlur = 10
+    canvasCtx.shadowColor = 'rgba(0, 0, 0, 0.35)'
+    canvasCtx.fillStyle = fillStyle
 
-  canvasCtx.beginPath()
-  canvasCtx.moveTo(x + r, y)
-  canvasCtx.arcTo(x + w, y, x + w, y + h, r)
-  canvasCtx.arcTo(x + w, y + h, x, y + h, r)
-  canvasCtx.arcTo(x, y + h, x, y, r)
-  canvasCtx.arcTo(x, y, x + w, y, r)
-  canvasCtx.closePath()
-  canvasCtx.fill()
-  canvasCtx.restore() 
-  return canvas
-  }
+    canvasCtx.beginPath()
+    canvasCtx.moveTo(x + r, y)
+    canvasCtx.arcTo(x + w, y, x + w, y + h, r)
+    canvasCtx.arcTo(x + w, y + h, x, y + h, r)
+    canvasCtx.arcTo(x, y + h, x, y, r)
+    canvasCtx.arcTo(x, y, x + w, y, r)
+    canvasCtx.closePath()
+    canvasCtx.fill()
+    canvasCtx.restore() 
+    return canvas
+    }
 
   drawGradientRoundRect (colorOne, colorTwo, w, h, r) {
     const x = 0
     const y = 0
+    const canvas = createCanvas(w, h)
     const canvasCtx = canvas.getContext('2d')
 
     const gradient = canvasCtx.createLinearGradient(0, 0, w, h)
